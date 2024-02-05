@@ -21,3 +21,15 @@ export const createRecord = async (data: UrlResourceSchema, retries = 3) => {
     return Promise.reject(error);
   }
 };
+
+export const updateRecord = async (id: string, data: UrlResourceSchema) => {
+  const record = await db.collection('urls').doc(id).get();
+  if (!record.exists) {
+    return Error('Record does not exist');
+  }
+  if(record.data()?.userId !== data.userId) {
+    return Error('Unauthorized');
+  }
+  db.collection('urls').doc(id).update({url: data.url});
+  return  await db.collection('urls').doc(id).get();
+}
