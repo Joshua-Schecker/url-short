@@ -19,6 +19,11 @@ app.get('/', async (req: Request, res: Response) => {
 });
 
 
+app.post('/register', async (req: Request, res: Response) => {
+  const input = userRegistrationSchema.parse(req.body);
+  const user = await auth.createUser(input);
+  res.status(201).send({ user });
+});
 
 app.post('/api/v1/shorten', async (req: Request, res: Response) => {
     //@ts-ignore
