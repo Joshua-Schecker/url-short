@@ -5,6 +5,7 @@ export const urlInputSchema = z.object({
 });
 
 export const urlResourceSchema = z.object({
+  id: z.string(),
   url: z.string().url(),
   userId: z.string(),
 });

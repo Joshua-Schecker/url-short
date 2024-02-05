@@ -1,5 +1,5 @@
 import { db } from '../firebaseConfig';
-import { UrlResourceSchema } from '../schemas';
+import { UrlResourceSchema, urlResourceSchema } from '../schemas';
 import { isFirebaseError } from '../types/typeAssertions';
 import { generateShortURL } from '../utils';
 
@@ -7,9 +7,8 @@ export const createRecord = async (data: UrlResourceSchema, retries = 3) => {
   try {
     const id = generateShortURL();
     await db.collection('urls').doc(id).set(data);
-    const result= await db.collection('urls').doc(id).get();
-    console.log(result.data())
-    return result
+    const result = await db.collection('urls').doc(id).get();
+    return getRecordById(id);
   } catch (error) {
     if (retries <= 0) {
       return Promise.reject('Unable to create record. Maximum number of retries reached.');
@@ -33,5 +32,13 @@ export const updateRecord = async (id: string, data: UrlResourceSchema) => {
     return Error('Unauthorized');
   }
   db.collection('urls').doc(id).update({ url: data.url });
-  return await db.collection('urls').doc(id).get();
+  return await getRecordById(id);
+};
+
+export const getRecordById = async (id: string): Promise<UrlResourceSchema> => {
+  const result = await db.collection('urls').doc(id).get();
+  if (!result.exists) {
+    return Promise.reject('Record does not exist');
+  }
+  return urlResourceSchema.parse({ ...result.data(), id: result.id });
 };
