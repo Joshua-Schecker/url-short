@@ -8,13 +8,16 @@ export const getAuthToken = async (req: Request, res: Response, next: NextFuncti
       const token = await auth.verifyIdToken(authHeader.split('Bearer ')[1]);
       //@ts-ignore
       req.token = token;
-      next();
+      return next(); // Proceed to the next middleware/route handler
     } catch (err) {
       console.log(err);
+      // Return here to prevent calling next() again after sending a response
       return res.status(401).json({
-        message: 'Authentification Failed',
+        message: 'Authentication Failed',
       });
     }
+  } else {
+    // If there's no authorization header, just move to the next middleware/route handler
+    next();
   }
-  next();
 };
