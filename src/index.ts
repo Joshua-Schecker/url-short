@@ -13,7 +13,6 @@ const app: Express = express();
 app.use(express.json());
 app.use(getAuthToken);
 
-
 app.post('/register', async (req: Request, res: Response) => {
   const input = userRegistrationSchema.parse(req.body);
   const user = await auth.createUser(input);
