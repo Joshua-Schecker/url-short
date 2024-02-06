@@ -29,7 +29,7 @@ app.post(
     }
     const input = urlInputSchema.parse(req.body);
     //@ts-ignore
-    const result = await createRecord({ ...input, userId: req.token.uid});
+    const result = await createRecord(input, req.token.uid);
     res.send(result);
   })
 );

@@ -1,13 +1,17 @@
 import { db } from '../firebaseConfig';
-import { UrlResourceSchema, urlResourceSchema } from '../schemas';
+import { UrlInputSchema, UrlResourceSchema, urlResourceSchema } from '../schemas';
 import { isFirebaseError } from '../types/typeAssertions';
 import { generateShortURL } from '../utils';
 
-export const createRecord = async (data: UrlResourceSchema, retries = 3) => {
+export const createRecord = async (data: UrlInputSchema, userId: string, retries = 3) => {
   try {
     const id = generateShortURL();
-    await db.collection('urls').doc(id).set(data);
-    const result = await db.collection('urls').doc(id).get();
+    const shortUrl = `${process.env.BASE_URL}/${id}`;
+    await db
+      .collection('urls')
+      .doc(id)
+      .set({ ...data, userId, shortUrl });
+    await db.collection('urls').doc(id).get();
     return getRecordById(id);
   } catch (error) {
     if (retries <= 0) {
@@ -15,23 +19,27 @@ export const createRecord = async (data: UrlResourceSchema, retries = 3) => {
     }
 
     if (isFirebaseError(error)) {
+      // retry on ID collision
       if (error.code === 'ALREADY_EXISTS') {
-        return await createRecord(data, retries - 1);
+        //TODO: find const value for this error code
+        return await createRecord(data, userId, retries - 1);
       }
     }
     return Promise.reject(error);
   }
 };
 
-export const updateRecord = async (id: string, data: UrlResourceSchema) => {
+export const updateRecord = async (id: string, userId: string, data: UrlInputSchema) => {
   const record = await db.collection('urls').doc(id).get();
   if (!record.exists) {
     return Error('Record does not exist');
   }
-  if (record.data()?.userId !== data.userId) {
+  if (record.data()?.userId !== userId) {
     return Error('Unauthorized');
   }
-  db.collection('urls').doc(id).update({ url: data.url });
+  db.collection('urls')
+    .doc(id)
+    .update({ ...record, url: data.url });
   return await getRecordById(id);
 };
 

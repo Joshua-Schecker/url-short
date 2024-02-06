@@ -8,6 +8,7 @@ export const urlResourceSchema = z.object({
   id: z.string(),
   url: z.string().url(),
   userId: z.string(),
+  shortUrl: z.string().url(),
 });
 export const userRegistrationSchema = z.object({
   email: z.string().email(),
@@ -15,3 +16,4 @@ export const userRegistrationSchema = z.object({
 });
 
 export type UrlResourceSchema = z.infer<typeof urlResourceSchema>;
+export type UrlInputSchema = z.infer<typeof urlInputSchema>;
