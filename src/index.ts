@@ -5,6 +5,7 @@ import { getAuthToken } from './authMiddleware';
 import { auth } from './firebaseConfig';
 import { urlInputSchema, userRegistrationSchema } from './schemas';
 import { createRecord, getRecordById, updateRecord } from './views/urls';
+import { errorHandler } from './utils';
 
 dotenv.config();
 const port = process.env.PORT || 3001;
@@ -28,9 +29,13 @@ app.post(
       return;
     }
     const input = urlInputSchema.parse(req.body);
-    //@ts-ignore
-    const result = await createRecord(input, req.token.uid);
-    res.send(result);
+    try {
+      //@ts-ignore
+      const result = await createRecord(input, req.token.uid);
+      res.send(result);
+    } catch (error) {
+      errorHandler(error, res);
+    }
   })
 );
 
@@ -39,21 +44,30 @@ app.patch(
   asyncHandler(async (req: Request, res: Response) => {
     //@ts-ignore
     if (!req.token) {
+      // TODO: convert to middleware
       res.status(401).send({ error: 'Unauthorized' });
     }
     const id = req.params.id;
     const input = urlInputSchema.parse(req.body);
-    //@ts-ignore
-    const result = await updateRecord(id, { ...input, userId: req.token.uid });
-    res.send(result);
+    try {
+      //@ts-ignore
+      const result = await updateRecord(id, req.token.uid, input);
+      res.send(result);
+    } catch (error) {
+      errorHandler(error, res);
+    }
   })
 );
 
 app.get(
   '/:id',
   asyncHandler(async (req: Request, res: Response) => {
-    const record = await getRecordById(req.params.id);
-    res.redirect(301, record.url);
+    try {
+      const record = await getRecordById(req.params.id);
+      res.redirect(301, record.url);
+    } catch (error) {
+      errorHandler(error, res);
+    }
   })
 );
 

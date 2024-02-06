@@ -1,7 +1,7 @@
 import { db } from '../firebaseConfig';
 import { UrlInputSchema, UrlResourceSchema, urlResourceSchema } from '../schemas';
 import { isFirebaseError } from '../types/typeAssertions';
-import { generateShortURL } from '../utils';
+import { ErrorTypes, generateShortURL } from '../utils';
 
 export const createRecord = async (data: UrlInputSchema, userId: string, retries = 3) => {
   try {
@@ -15,7 +15,7 @@ export const createRecord = async (data: UrlInputSchema, userId: string, retries
     return getRecordById(id);
   } catch (error) {
     if (retries <= 0) {
-      return Promise.reject('Unable to create record. Maximum number of retries reached.');
+      return Promise.reject(ErrorTypes.RetryLimit);
     }
 
     if (isFirebaseError(error)) {
@@ -32,10 +32,10 @@ export const createRecord = async (data: UrlInputSchema, userId: string, retries
 export const updateRecord = async (id: string, userId: string, data: UrlInputSchema) => {
   const record = await db.collection('urls').doc(id).get();
   if (!record.exists) {
-    return Error('Record does not exist');
+    return Error(ErrorTypes.RecordDoesNotExist);
   }
   if (record.data()?.userId !== userId) {
-    return Error('Unauthorized');
+    return Error(ErrorTypes.Unauthorized);
   }
   db.collection('urls')
     .doc(id)
@@ -46,7 +46,7 @@ export const updateRecord = async (id: string, userId: string, data: UrlInputSch
 export const getRecordById = async (id: string): Promise<UrlResourceSchema> => {
   const result = await db.collection('urls').doc(id).get();
   if (!result.exists) {
-    return Promise.reject('Record does not exist');
+    return Promise.reject(ErrorTypes.RecordDoesNotExist);
   }
   return urlResourceSchema.parse({ ...result.data(), id: result.id });
 };
