@@ -41,8 +41,6 @@ I chose NodeJs and Express because they are simple and familiar to me. The proje
 Although the project specified that a UI was not expected, I created a simple one to test the API. I realized a little late that Firebase expects user authentication to occur on the client side, and so I had to create a simple UI to test the API. This wasn't ideal, but it was the simplest way to test the API. Instead I should have chosen a different authentication service or created a simple authentication service on the server side.
 
 ### TODOS:
-- Add tests
-  - I would like to add tests for the functions in the utilities file as well as the views
-- Add Delete endpoint
-- Add ability to choose custom shortened URLs
+- Add integration tests
+- Add tests for update and get endpoints
 - Add support for firebase emulators to make local dev easier
