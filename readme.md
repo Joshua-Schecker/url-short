@@ -32,6 +32,8 @@ The project is built using NodeJs and Express. The document store and authentica
 
 The service has a single collection called `urls` which contains a full URL and the user ID of the resource creator. The ID or the resource fucntions as it's shortened URL path. The user ID is used to authenticate the user and ensure that only the creator of the URL can update it. The userId is retrieved from the JWT.
 
+The ID of the document is the same as the short url path. This ensures that the short url is unique. I would prefer to use a unique constraint for the `shortUrl` field, but this is not supported by Firestore.
+
 ### Reasoning
 I chose Firebase because it offered a one-stop shop for both document storage and authentication. It also has a free tier which is suitable for this project, and many other services which would be of use if the project is developed further. 
 
