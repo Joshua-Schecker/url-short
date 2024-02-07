@@ -4,8 +4,8 @@ import asyncHandler from 'express-async-handler';
 import { getAuthToken } from './authMiddleware';
 import { auth } from './firebaseConfig';
 import { urlInputSchema, userRegistrationSchema } from './schemas';
-import { createRecord, getRecordById, updateRecord } from './views/urls';
 import { errorHandler } from './utils';
+import { createRecord, getRecordById, updateRecord } from './views/urls';
 
 dotenv.config();
 const port = process.env.PORT || 3001;

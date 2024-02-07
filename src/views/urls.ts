@@ -1,21 +1,18 @@
-import { db } from '../firebaseConfig';
+import { urlCollection } from '../firebaseConfig';
 import { UrlInputSchema, UrlResourceSchema, urlResourceSchema } from '../schemas';
 import { isFirebaseError } from '../types/typeAssertions';
-import { ErrorTypes, generateShortURL } from '../utils';
+import { ErrorTypes, generateShortPath } from '../utils';
 
 export const createRecord = async (data: UrlInputSchema, userId: string, retries = 3) => {
   try {
-    const id = generateShortURL();
+    const id = generateShortPath();
     const shortUrl = `${process.env.BASE_URL}/${id}`;
-    await db
-      .collection('urls')
-      .doc(id)
-      .set({ ...data, userId, shortUrl });
-    await db.collection('urls').doc(id).get();
+    await urlCollection.doc(id).set({ ...data, userId, shortUrl });
+    await urlCollection.doc(id).get();
     return getRecordById(id);
   } catch (error) {
     if (retries <= 0) {
-      return Promise.reject(ErrorTypes.RetryLimit);
+      throw new Error(ErrorTypes.RetryLimit);
     }
 
     if (isFirebaseError(error)) {
@@ -25,26 +22,24 @@ export const createRecord = async (data: UrlInputSchema, userId: string, retries
         return await createRecord(data, userId, retries - 1);
       }
     }
-    return Promise.reject(error);
+    throw error;
   }
 };
 
 export const updateRecord = async (id: string, userId: string, data: UrlInputSchema) => {
-  const record = await db.collection('urls').doc(id).get();
+  const record = await urlCollection.doc(id).get();
   if (!record.exists) {
     return Error(ErrorTypes.RecordDoesNotExist);
   }
   if (record.data()?.userId !== userId) {
     return Error(ErrorTypes.Unauthorized);
   }
-  db.collection('urls')
-    .doc(id)
-    .update({ ...record, url: data.url });
+  urlCollection.doc(id).update({ ...record, url: data.url });
   return await getRecordById(id);
 };
 
 export const getRecordById = async (id: string): Promise<UrlResourceSchema> => {
-  const result = await db.collection('urls').doc(id).get();
+  const result = await urlCollection.doc(id).get();
   if (!result.exists) {
     return Promise.reject(ErrorTypes.RecordDoesNotExist);
   }
