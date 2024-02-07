@@ -1,6 +1,6 @@
 import { Response } from 'express';
 
-export function generateShortURL(_length?: number): string {
+export function generateShortPath(_length?: number): string {
   const length = _length ?? parseInt(process.env.SHORT_URL_LENGTH ?? '5');
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = characters.length;
@@ -10,7 +10,6 @@ export function generateShortURL(_length?: number): string {
   }
   return result;
 }
-
 
 export enum ErrorTypes {
   RecordDoesNotExist = 'Record does not exist',
